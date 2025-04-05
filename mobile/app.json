@@ -19,10 +19,17 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/appIcon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.ence.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "74eaf988-e158-45f6-8cf4-1862946ab21b"
+      }
+    },
+    "owner": "ence"
   }
 }
