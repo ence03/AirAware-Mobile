@@ -38,7 +38,6 @@ const useAuthStore = create((set) => ({
     try {
       const user = await AsyncStorage.getItem("user");
       const token = await AsyncStorage.getItem("token");
-
       if (user && token) {
         set({ user: JSON.parse(user), token, isAuthenticated: true });
         console.log("User is authenticated.");

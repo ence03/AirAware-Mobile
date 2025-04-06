@@ -10,16 +10,32 @@ import React, { useState } from "react";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import useAuthStore from "../store/authStore";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Header = () => {
   const navigation = useNavigation();
   const { user, clearUser } = useAuthStore();
   const [modalVisible, setModalVisible] = useState(false);
 
-  const handleLogout = () => {
-    clearUser(); // Clear user data from Zustand store
-    setModalVisible(false); // Close the modal
-    navigation.navigate("login");
+  const handleLogout = async () => {
+    try {
+      // Clear AsyncStorage token
+      await AsyncStorage.removeItem("token");
+
+      // Clear user from Zustand store
+      clearUser();
+
+      // Close the modal
+      setModalVisible(false);
+
+      // Reset navigation stack and go to login
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "login" }],
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (

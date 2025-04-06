@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import axios from "../axiosConfig";
@@ -25,40 +25,52 @@ const LoginScreen = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
 
+  useEffect(() => {
+    const checkPersistedLogin = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        try {
+          // Verify token with backend or decode locally
+          await useAuthStore.getState().checkAuth();
+          navigation.navigate("home");
+        } catch (e) {
+          await AsyncStorage.removeItem("token");
+        }
+      }
+    };
+    checkPersistedLogin();
+  }, [navigation]);
+
   const handleLogin = async () => {
+    if (!username || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
     try {
       const response = await axios.post(
         "https://airaware.up.railway.app/api/auth/login",
-        {
-          username,
-          password,
-        }
+        { username, password }
       );
 
       if (response.data.success) {
         const { user, token } = response.data;
-
-        // Debugging logs
-        console.log("Login response user:", user);
-        console.log("Login response token:", token);
-
-        // Save user and token to Zustand store
         await useAuthStore.getState().setUser(user, token);
-
         await AsyncStorage.setItem("token", token);
-        console.log("Token saved to AsyncStorage");
-
         await useAuthStore.getState().checkAuth();
-
         navigation.navigate("home");
       } else {
-        console.error("Login failed at server level.");
+        setError(response.data.message || "Login failed");
       }
     } catch (error) {
-      console.error(
-        "Error during login:",
-        error.response?.data?.message || error.message
+      setError(
+        error.response?.data?.message || "Network error, please try again"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
